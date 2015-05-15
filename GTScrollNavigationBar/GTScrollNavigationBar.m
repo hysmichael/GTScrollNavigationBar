@@ -111,8 +111,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
     }
     
     // Don't try to scroll navigation bar if there's not enough room
-    if (self.scrollView.frame.size.height + (self.bounds.size.height * 2) >=
-        self.scrollView.contentSize.height) {
+    if (self.scrollView.frame.size.height * 2 >= self.scrollView.contentSize.height) {
         return;
     }
     
@@ -125,7 +124,7 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
         return;
     }
     
-    CGFloat deltaY = contentOffsetY - self.lastContentOffsetY;
+    CGFloat deltaY = (contentOffsetY - self.lastContentOffsetY) / 3.0;
     if (deltaY < 0.0f) {
         self.scrollState = GTScrollNavigationBarScrollingDown;
     } else if (deltaY > 0.0f) {
@@ -155,16 +154,18 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
             alpha = kNearZero;
         }
         [self setFrame:frame alpha:alpha animated:YES];
-    }
-    else {
-        // Move navigation bar with the change in contentOffsetY
-        frame.origin.y -= deltaY;
-        frame.origin.y = MIN(maxY, MAX(frame.origin.y, minY));
+    } else {
         
-        alpha = (frame.origin.y - (minY + maxY)) / (maxY - (minY + maxY));
-        alpha = MAX(kNearZero, alpha);
-        
-        [self setFrame:frame alpha:alpha animated:NO];
+        if (contentOffsetY > 50.0 && contentOffsetY < self.scrollView.contentSize.height - self.scrollView.bounds.size.height - 50.0) {
+            // Move navigation bar with the change in contentOffsetY
+            frame.origin.y -= deltaY;
+            frame.origin.y = MIN(maxY, MAX(frame.origin.y, minY));
+            
+            alpha = (frame.origin.y - (minY + maxY)) / (maxY - (minY + maxY));
+            alpha = MAX(kNearZero, alpha);
+            
+            [self setFrame:frame alpha:alpha animated:NO];
+        }
     }
     
     self.lastContentOffsetY = contentOffsetY;
